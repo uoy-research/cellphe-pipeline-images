@@ -1,0 +1,12 @@
+[project]
+name = "image-processing"
+version = "0.0.1"
+description = "Dependencies for running QC reports."
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "pillow",
+    "scikit-image",
+]

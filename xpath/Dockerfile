@@ -1,12 +1,21 @@
-FROM perl:5.43.4-slim-trixie
+# ---- Stage 1: Build the XPath module ----
+FROM alpine:3.22.2 AS builder
 
-# Install dependencies
-RUN apt update && apt install -y build-essential libexpat1-dev && rm -rf /var/cache/apt/archives /var/lib/apt/lists/*
+# Install Perl, build tools, and cpanminus
+RUN apk add --no-cache perl perl-dev perl-app-cpanminus make gcc musl-dev expat-dev
 
-# Install cpanm so can install cpan packages without configuring environment
-RUN curl -L https://cpanmin.us | perl - App::cpanminus
+# Install XML::XPath (provides the `xpath` CLI)
+RUN cpanm --notest XML::XPath && rm -rf ~/.cpanm
 
-# Install xpath module
-RUN cpanm XML::XPath
+# ---- Stage 2: Minimal runtime ----
+FROM alpine:3.22.2
 
-ENTRYPOINT ["bash"]
+# Install bash + Perl runtime + XML library (no build tools)
+RUN apk add --no-cache bash perl expat-dev
+
+# Copy Perl modules + xpath executable from builder
+COPY --from=builder /usr/local/lib/perl5 /usr/local/lib/perl5
+COPY --from=builder /usr/local/share/perl5 /usr/local/share/perl5
+COPY --from=builder /usr/local/bin/xpath /usr/local/bin/xpath
+
+ENTRYPOINT ["/bin/bash"]

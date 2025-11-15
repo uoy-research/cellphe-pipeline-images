@@ -28,7 +28,7 @@ RUN uv run setup_imagej.py
 
 # Application image with Python & Java runtime
 FROM alpine:3.22.2 AS app
-RUN apk add --no-cache openjdk21-jdk python3=3.12.12-r0 bash
+RUN apk add --no-cache openjdk21-jre python3=3.12.12-r0 bash
 
 # Fix JVM linkage issue
 # See https://gitlab.alpinelinux.org/alpine/aports/-/issues/16606#top

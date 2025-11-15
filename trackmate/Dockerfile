@@ -1,11 +1,11 @@
-FROM python:3.12-slim AS builder
+FROM alpine:3.22.2 AS builder
 
 # Build dependencies
-RUN apt update && apt install -y \
-    build-essential \
-    default-jdk \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache build-base openjdk21-jdk curl python3=3.12.12-r0 python3-dev linux-headers zip
+
+# Fix JVM linkage issue
+# See https://gitlab.alpinelinux.org/alpine/aports/-/issues/16606#top
+ENV LD_LIBRARY_PATH="/usr/lib/jvm/java-21-openjdk/lib/server"
 
 WORKDIR /app
 
@@ -20,22 +20,24 @@ RUN curl https://dlcdn.apache.org/maven/maven-3/$MAVEN_VERSION/binaries/apache-m
 # Install Python dependencies
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
  && mv /root/.local/bin/uv /usr/local/bin/uv
-
 RUN uv pip install --system --break-system-packages pyimagej scyjava
 
+# Download Fiji + deps
 COPY setup_imagej.py .
 RUN uv run setup_imagej.py
 
 # Application image with Python & Java runtime
-FROM python:3.12-slim AS app
-RUN apt-get update && apt-get install -y \
-    default-jdk \
-    && rm -rf /var/lib/apt/lists/*
+FROM alpine:3.22.2 AS app
+RUN apk add --no-cache openjdk21-jdk python3=3.12.12-r0
+
+# Fix JVM linkage issue
+# See https://gitlab.alpinelinux.org/alpine/aports/-/issues/16606#top
+ENV LD_LIBRARY_PATH="/usr/lib/jvm/java-21-openjdk/lib/server"
 
 WORKDIR /app
 
 # Copy python dependencies over from builder
-COPY --from=builder /usr/local/lib/python3.12 /usr/local/lib/python3.12
+COPY --from=builder /usr/lib/python3.12 /usr/lib/python3.12
 
 # Copy maven and maven cache over
 ENV PATH=/opt/maven/bin:$PATH

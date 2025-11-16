@@ -8,3 +8,8 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
 
 # Install cellphe via uv
 RUN uv pip install --system --break-system-packages cellphe
+
+# Copy python dependencies over from builder
+FROM python:3.12.12-slim-trixie AS app
+COPY --from=builder /usr/local/lib/python3.12 /usr/local/lib/python3.12
+ENTRYPOINT ["/bin/bash"]

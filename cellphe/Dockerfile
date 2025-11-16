@@ -6,7 +6,9 @@ RUN apt update && apt install -y curl && rm -rf /var/cache/apt/archives /var/lib
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
  && mv /root/.local/bin/uv /usr/local/bin/uv
 
-# Install cellphe via uv
+# Install CPU only torch
+RUN uv pip install --system --break-system-packages torch --index-url https://download.pytorch.org/whl/cpu
+# Now installl cellphe
 RUN uv pip install --system --break-system-packages cellphe
 
 # Copy python dependencies over from builder

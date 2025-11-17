@@ -1,4 +1,4 @@
-name: build_images
+name: build_xpath
 
 on:
   workflow_dispatch:

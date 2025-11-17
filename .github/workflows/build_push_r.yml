@@ -1,4 +1,4 @@
-name: build_images
+name: build_r
 
 on:
   workflow_dispatch:

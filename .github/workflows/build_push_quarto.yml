@@ -1,4 +1,4 @@
-name: build_images
+name: build_quarto
 
 on:
   workflow_dispatch:

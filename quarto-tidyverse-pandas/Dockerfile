@@ -16,9 +16,8 @@ FROM rhub/r-minimal:4.5.2 AS r-builder
 # Plus all system dependencies are listed in r-minimal's docs
 # https://github.com/r-hub/r-minimal/blob/main/examples/tidyverse-minimal/Dockerfile
 RUN installr -d \
-    -t "curl-dev libxml2-dev linux-headers gfortran fontconfig-dev fribidi-dev harfbuzz-dev freetype-dev libpng-dev tiff-dev" \
-    -a "libcurl libxml2 fontconfig fribidi harfbuzz freetype libpng tiff libjpeg icu-libs" \
-    tidyverse knitr rmarkdown reticulate
+    -t "gfortran" \
+    dplyr ggplot2 knitr rmarkdown reticulate Cairo
 
 # Remove large documentation as detailed in r-minimal docs
 # https://github.com/r-hub/r-minimal/blob/main/examples/tidyverse-minimal/Dockerfile
@@ -36,14 +35,14 @@ RUN rm -rf /usr/local/lib/R/library/*/help && \
 # ---- Stage 3: Python + uv builder ----
 FROM alpine:3.22.2 AS python-builder
 
-RUN apk add --no-cache python3=3.12.12-r0 curl
+RUN apk add --no-cache python3=3.12.12-r0 curl build-base python3-dev
 
 # Install uv purely for speed
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
  && mv /root/.local/bin/uv /usr/local/bin/uv
 
 # Install numpy and pandas via uv
-RUN uv pip install --system --break-system-packages numpy pandas
+RUN uv pip install --system --break-system-packages numpy pandas matplotlib scikit-image pillow
 
 # ---- Stage 4: Get libc library for Deno ----
 FROM gcr.io/distroless/cc AS cc
@@ -55,21 +54,8 @@ FROM rhub/r-minimal:4.5.2
 RUN apk add --no-cache \
       bash \
       python3=3.12.12-r0 \
-      fontconfig \
       ttf-dejavu \
-      tini \
-      libstdc++ \
-      libgfortran \
-      libgcc \
-      libcurl \
-      libxml2 \
-      fribidi \
-      harfbuzz \
-      freetype \
-      libpng \
-      tiff \
-      libjpeg \
-      icu-libs
+      cairo-dev
 
 # Copy R packages
 COPY --from=r-builder /usr/local/lib/R /usr/local/lib/R
@@ -94,5 +80,7 @@ COPY --from=quarto-builder /opt/quarto /opt/quarto
 RUN ln -s /opt/quarto/bin/quarto /usr/local/bin/quarto
 RUN ln -s /opt/quarto/bin/tools/x86_64/deno /usr/local/bin/deno
 RUN ln -s /opt/quarto/bin/tools/x86_64/pandoc /usr/local/bin/pandoc
+
+WORKDIR /app
 
 ENTRYPOINT ["/bin/bash"]

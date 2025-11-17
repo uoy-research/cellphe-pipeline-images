@@ -1,6 +1,7 @@
 name: build_images
 
 on:
+  workflow-dispatch:
   pull-request:
     types:
       - closed
@@ -8,8 +9,6 @@ on:
       - main
     paths:
       - 'r-dplyr/**'
-
-  workflow-dispatch:
 
 jobs:
   docker:

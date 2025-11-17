@@ -51,25 +51,10 @@ FROM gcr.io/distroless/cc AS cc
 FROM rhub/r-minimal:4.5.2
 
 # Runtime dependencies
-# TODO can any of these be removed?
 RUN apk add --no-cache \
       bash \
       python3=3.12.12-r0 \
-      fontconfig \
       ttf-dejavu \
-      tini \
-      libstdc++ \
-      libgfortran \
-      libgcc \
-      libcurl \
-      libxml2 \
-      fribidi \
-      harfbuzz \
-      freetype \
-      libpng \
-      tiff \
-      libjpeg \
-      icu-libs \
       cairo-dev
 
 # Copy R packages

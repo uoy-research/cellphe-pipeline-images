@@ -2,8 +2,14 @@ name: build_images
 
 on:
   pull-request:
+    types:
+      - closed
     branches:
       - main
+    paths:
+      - 'r-dplyr/**'
+
+  workflow-dispatch:
 
 jobs:
   docker:
@@ -24,4 +30,4 @@ jobs:
           context: r-dplyr
           tags: |
             ghcr.io/cellphe/r-dplyr:latest
-            ghcr.io/cellphe/r-dplyr:1.0.0
+            ghcr.io/cellphe/r-dplyr:0.1.0

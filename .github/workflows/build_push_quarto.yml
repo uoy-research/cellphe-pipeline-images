@@ -1,0 +1,34 @@
+name: build_images
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+    paths:
+      - 'quarto-tidyverse-pandas/**'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push quarto
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          context: quarto-tidyverse-pandas
+          tags: |
+            ghcr.io/uoy-research/cellphe-quarto:latest
+            ghcr.io/uoy-research/cellphe-quarto:0.1.0

@@ -30,5 +30,5 @@ jobs:
           push: true
           context: r-dplyr
           tags: |
-            ghcr.io/cellphe-pipeline-images/r-dplyr:latest
-            ghcr.io/cellphe-pipeline-images/r-dplyr:0.1.0
+            ghcr.io/uoy-research/cellphe-r-dplyr:latest
+            ghcr.io/uoy-research/cellphe-r-dplyr:0.1.0

@@ -40,8 +40,10 @@ WORKDIR /app
 COPY --from=builder /usr/lib/python3.12 /usr/lib/python3.12
 
 # Copy maven and maven cache over
-ENV PATH=/opt/maven/bin:$PATH
+# NB: Setting HOME to /tmp to allow for Apptainer compatibility
 COPY --from=builder /opt/maven /opt/maven
-COPY --from=builder /root/.m2 /root/.m2
+COPY --from=builder /root/.m2 /tmp/m2
+ENV PATH=/opt/maven/bin:$PATH
+ENV HOME=/tmp
 
 ENTRYPOINT ["/bin/bash"]

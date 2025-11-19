@@ -4,7 +4,6 @@ FROM alpine:3.22.2 AS builder
 # Install all required tools and dependencies
 RUN apk add --no-cache \
     bash \
-    gawk \
     imagemagick \
     zip \
     tiff-tools
@@ -16,7 +15,6 @@ FROM alpine:3.22.2
 
 # Copy only the executables and required shared libraries from builder
 COPY --from=builder /bin/bash /bin/bash
-COPY --from=builder /usr/bin/awk /usr/bin/awk
 COPY --from=builder /usr/bin/zip /usr/bin/zip
 COPY --from=builder /usr/bin/tiffsplit /usr/bin/tiffsplit
 COPY --from=builder /usr/bin/magick /usr/bin/magick

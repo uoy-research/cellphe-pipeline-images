@@ -11,7 +11,7 @@ on:
       - 'linux-utils/**'
 env:
   SOURCE: "linux-utils"
-  IMAGE: "linux-utils"
+  IMAGE: "cellphe-linux-utils"
 
 jobs:
   docker:

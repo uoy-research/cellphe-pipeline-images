@@ -1,16 +1,21 @@
+ARG QUARTO_VERSION=1.8.25
+ARG PYTHON_VERSION=3.12.12-r0
+ARG PYTHON_VERSION_MINOR=python3.12
+ARG R_VERSION=4.5.2
+
 # ---- Stage 1: Quarto builder ----
 FROM alpine:3.22.2 AS quarto-builder
 
 RUN apk add --no-cache curl tar gzip
 
 # Install Quarto CLI (official release)
-ARG QUARTO_VERSION=1.8.25
+ARG QUARTO_VERSION
 RUN curl -L "https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.tar.gz" \
     | tar -xz -C /opt \
  && mv /opt/quarto-${QUARTO_VERSION} /opt/quarto
 
 # ---- Stage 2: R + packages builder ----
-FROM rhub/r-minimal:4.5.2 AS r-builder
+FROM rhub/r-minimal:$R_VERSION AS r-builder
 
 # Using installr to make it one call
 # Plus all system dependencies are listed in r-minimal's docs
@@ -34,26 +39,31 @@ RUN rm -rf /usr/local/lib/R/library/*/help && \
 
 # ---- Stage 3: Python + uv builder ----
 FROM alpine:3.22.2 AS python-builder
+ARG PYTHON_VERSION
+ARG PYTHON_VERSION_MINOR
 
-RUN apk add --no-cache python3=3.12.12-r0 curl build-base python3-dev
+RUN apk add --no-cache python3=$PYTHON_VERSION curl build-base python3-dev
 
 # Install uv purely for speed
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
  && mv /root/.local/bin/uv /usr/local/bin/uv
 
-# Install numpy and pandas via uv
-RUN uv pip install --system --break-system-packages numpy pandas matplotlib scikit-image pillow
+# Install Python dependencies
+COPY requirements.txt .
+RUN uv pip install --system --break-system-packages -r requirements.txt
 
 # ---- Stage 4: Get libc library for Deno ----
 FROM gcr.io/distroless/cc AS cc
 
 # ---- Stage 5: Final runtime ----
-FROM rhub/r-minimal:4.5.2
+FROM rhub/r-minimal:$R_VERSION
+ARG PYTHON_VERSION
+ARG PYTHON_VERSION_MINOR
 
 # Runtime dependencies
 RUN apk add --no-cache \
       bash \
-      python3=3.12.12-r0 \
+      python3=$PYTHON_VERSION \
       ttf-dejavu \
       cairo-dev
 
@@ -61,7 +71,7 @@ RUN apk add --no-cache \
 COPY --from=r-builder /usr/local/lib/R /usr/local/lib/R
 
 # Copy Python packages
-COPY --from=python-builder /usr/lib/python3.12 /usr/lib/python3.12
+COPY --from=python-builder /usr/lib/$PYTHON_VERSION_MINOR /usr/lib/$PYTHON_VERSION_MINOR
 
 # Copy libc libraries needed for deno (quarto dependency)
 # Approach taken from link below with modification as if take all libraries it clashes with R install

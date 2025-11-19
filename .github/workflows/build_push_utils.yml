@@ -9,6 +9,9 @@ on:
       - main
     paths:
       - 'linux-utils/**'
+env:
+  SOURCE: "linux-utils"
+  IMAGE: "linux-utils"
 
 jobs:
   docker:
@@ -16,6 +19,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Set variables
+        run: |
+          VER=$(cat $SOURCE/version)
+          echo "VERSION=$VER" >> $GITHUB_ENV
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -28,7 +35,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          context: linux-utils
+          context: ${{ env.SOURCE }}
           tags: |
-            ghcr.io/uoy-research/cellphe-linux-utils:latest
-            ghcr.io/uoy-research/cellphe-linux-utils:0.1.0
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE }}:${{ env.VERSION}}

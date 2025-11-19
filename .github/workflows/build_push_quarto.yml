@@ -10,12 +10,20 @@ on:
     paths:
       - 'quarto-tidyverse-pandas/**'
 
+env:
+  SOURCE: "quarto-tidyverse-pandas"
+  IMAGE: "cellphe-quarto"
+
 jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Set variables
+        run: |
+          VER=$(cat $SOURCE/version)
+          echo "VERSION=$VER" >> $GITHUB_ENV
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -28,7 +36,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          context: quarto-tidyverse-pandas
+          context: $SOURCE
           tags: |
-            ghcr.io/uoy-research/cellphe-quarto:latest
-            ghcr.io/uoy-research/cellphe-quarto:0.1.0
+            ghcr.io/${{ github.repository_owner }}/$IMAGE:latest
+            ghcr.io/${{ github.repository_owner }}/$IMAGE:$VERSION

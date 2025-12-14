@@ -10,7 +10,4 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
 # Install cellpose without any dependencies
 RUN uv pip install --system --break-system-packages cellpose==4.0.8
 
-# Pull in custom models
-COPY models/* /cellpose/
-
 ENTRYPOINT ["/bin/bash"]

@@ -8,6 +8,6 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
  && mv /root/.local/bin/uv /usr/local/bin/uv
 
 # Install cellpose without any dependencies
-RUN uv pip install --system --break-system-packages cellpose==4.0.8
+RUN uv pip install --system --break-system-packages cellpose==4.0.8 pillow scikit-image
 
 ENTRYPOINT ["/bin/bash"]
